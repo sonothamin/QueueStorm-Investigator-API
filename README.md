@@ -15,7 +15,7 @@ An AI-powered support operations API for analyzing customer complaints against r
 
 ## Rate Limits
 The Google Gemini API free tier has the following rate and token limits for Gemini Flash
-- Requests Per Day (RPD): Up to *20* requests per day.
+- Requests Per Day (RPD): Up to *500* requests per day.
 - Requests Per Minute (RPM): *5* requests per minute.
 - Tokens Per Minute (TPM): *250K* tokens per minute.
   
