@@ -13,6 +13,12 @@ An AI-powered support operations API for analyzing customer complaints against r
   https://glidbvymnitdsntrzmrg.supabase.co/functions/v1/analyze-ticket
   ```
 
+## Rate Limits
+The Google Gemini API free tier has the following rate and token limits
+- Requests Per Day (RPD): Up to *20* requests per day.
+- Requests Per Minute (RPM): *5* requests per minute.
+- Tokens Per Minute (TPM): *250K* tokens per minute.
+  
 ## Features
 - Analyze customer tickets using both complaint text and recent transaction history.
 - Identify the relevant transaction and assess whether the evidence is consistent, inconsistent, or insufficient.
