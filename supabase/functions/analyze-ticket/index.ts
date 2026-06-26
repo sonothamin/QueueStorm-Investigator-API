@@ -23,6 +23,7 @@ import {
   parseAnalyzeTicketRequest,
   ValidationError,
 } from "../_shared/validate.ts";
+import { persistAnalysis } from "../_shared/db.ts";
 
 function handler(req: Request): Promise<Response> | Response {
   const cors = handleCors(req);
@@ -154,8 +155,9 @@ async function handle(req: Request): Promise<Response> {
     return httpError(req, 500, "internal_error", "Unexpected server error");
   }
 
-  // Server-side safety scrubber. Defense in depth — the model was already
-  // told to obey these rules, but we do not trust it.
+  // Server-side safety scrubber. 
+  // The model was already told to obey these rules, but we do not trust it.
+  // Who trusts AIs right? XD
   const replyAudit = auditCustomerReply(analysis.customer_reply);
   const nextActionAudit = auditNextAction(analysis.recommended_next_action);
 
@@ -174,11 +176,12 @@ async function handle(req: Request): Promise<Response> {
     recommended_next_action: nextActionAudit.text,
   };
 
+  await persistAnalysis(parsedReq, cleaned);
+
   return ok(req, cleaned, 200);
 }
 
-// Local dev entrypoint. In production Supabase wraps this with its own
-// runtime — `Deno.serve` is invoked by the platform before `handler`.
+// Local dev entrypoint
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 if (import.meta.main) {

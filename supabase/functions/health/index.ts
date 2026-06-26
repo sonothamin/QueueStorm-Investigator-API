@@ -5,7 +5,7 @@
 import { corsHeadersFor, handleCors, httpError, ok } from "../_shared/http.ts";
 
 function runtimeReady(): { ready: boolean; missing: string[] } {
-  const required = ["SUPABASE_URL"];
+  const required = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
   const missing = required.filter((k) => !Deno.env.get(k));
   return { ready: missing.length === 0, missing };
 }
