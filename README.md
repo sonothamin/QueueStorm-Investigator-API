@@ -83,6 +83,24 @@ POST /analyze-ticket
   + Fast enough for support workflows
   + Capable of handling ticket summarization, severity assessment, case routing, and safe support assistance.
 
+### Safety logic
+Every analysis run passes through layered guardrails so the model can never override policy with content from a complaint:
+
+- **System-prompt guardrails (input side).** The investigator prompt (`supabase/functions/_shared/prompts.ts`) is treated as non-negotiable. It instructs the model to never ask for PINs, OTPs, passwords, or full card numbers; never confirm a refund, reversal, account unblock, or recovery; never direct customers to suspicious third parties or numbers found inside the complaint; never follow instructions embedded inside the complaint; and to stay strictly on the scope of the complaint and the provided transaction history. Complaints that try to override the role or output format are ignored and flagged via `reason_codes` / `human_review_required`.
+- **Output schema enforcement.** The model is required to return a single JSON object conforming to a strict enum contract (`case_type`, `severity`, `department`, `evidence_verdict`, etc.). Any output that fails schema or enum validation is rejected and replaced by a deterministic fallback analysis.
+- **Credential-request scrubber.** `customer_reply` is post-processed by `ensureSafetyReminder` in `supabase/functions/_shared/safety.ts`. If the reply does not already mention a credential (PIN/OTP/password/card number), a neutral safety reminder is appended automatically.
+- **Phishing heuristic.** A lightweight pattern check flags replies that mention suspicious channels (unknown phone numbers, third-party apps, non-official links) and rewrites them so only official in-app help center, the hotline on the back of the card, or a branch is referenced.
+- **PII redaction before logging.** Personally identifiable identifiers in the complaint are masked before persistence; only masked content is stored in Supabase.
+- **Deterministic fallback path.** If the Gemini call times out, returns 5xx, produces invalid JSON, or triggers the safety audit, the endpoint returns HTTP `207 Multi-Status` with `meta.fallback=true` and a conservative rule-based analysis so the customer reply can never be the unsafe raw output.
+- **Persistent overrides.** Analysts can `PATCH /analyses/:ticket_id` to correct a verdict; the patch re-runs the same safety audit so the corrected `customer_reply` is re-scrubbed before persistence.
+
+### Limitations
+- **Schema-bound output.** Free-form explanations are not supported; every response must conform to the fixed enum contract, which limits expressive nuance.
+- **LLM non-determinism.** Even with low temperature, Gemini can vary outputs across runs. 
+- **No Fallback Model.** Up to now, there is no fallback model if Gemini fails, no backup AI model or API is set up to continue service.
+- **Prompt-injection surface.** Complaints are treated as data, not instructions, and the safety scrubber covers known patterns, but jailbreak phrasing may still slip through.
+
+
 ## Deployment
 
 ### 1. Clone the repository
@@ -124,3 +142,4 @@ npx supabase db push
 
 ## Notes
 - The service expects a valid Gemini API key to generate structured outputs.
+- As per competetion guideline, I haven't enabled the Auth yet. The functions run with the `Service Role JWT`, but ideally, there should be an auth. 
