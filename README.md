@@ -2,6 +2,17 @@
 
 An AI-powered support operations API for analyzing customer complaints against recent transaction history. It exposes a production-style REST interface for support agents and internal copilots.
 
+## Live API Instance Endpoints
+- GET /health
+  ```
+  https://glidbvymnitdsntrzmrg.supabase.co/functions/v1/health
+  ```
+
+- POST analyze-ticket
+  ```
+  https://glidbvymnitdsntrzmrg.supabase.co/functions/v1/analyze-ticket
+  ```
+
 ## Features
 - Analyze customer tickets using both complaint text and recent transaction history.
 - Identify the relevant transaction and assess whether the evidence is consistent, inconsistent, or insufficient.
