@@ -1,0 +1,7 @@
+#No auth should be in place for this project globally.
+
+[functions.health]
+verify_jwt = false
+
+[functions.analyze-ticket]
+verify_jwt = false
